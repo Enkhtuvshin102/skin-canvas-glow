@@ -117,16 +117,18 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex min-h-screen w-full">
-        <AppSidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <TopBar />
-          <main className="flex-1 px-4 md:px-6 py-6">
-            <Outlet />
-          </main>
+      <ThemeProvider>
+        <div className="flex min-h-screen w-full">
+          <AppSidebar />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <TopBar />
+            <main className="flex-1 px-4 md:px-6 py-6">
+              <Outlet />
+            </main>
+          </div>
         </div>
-      </div>
-      <Toaster theme="dark" position="bottom-right" />
+        <Toaster theme="dark" position="bottom-right" />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
