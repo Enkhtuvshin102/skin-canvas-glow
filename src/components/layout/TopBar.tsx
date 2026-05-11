@@ -25,6 +25,7 @@ export function TopBar() {
             <Wallet className="h-4 w-4 text-primary" />
             <span className="font-semibold">$2,481.50</span>
           </button>
+          <ThemeSwitcher />
           <button className="relative rounded-lg glass p-2 hover:bg-white/5">
             <Bell className="h-4 w-4" />
             <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-fuchsia-400 shadow-[0_0_8px_rgba(232,121,249,0.9)]" />
