@@ -1,0 +1,49 @@
+import { motion } from "framer-motion";
+import { Link } from "@tanstack/react-router";
+import { ArrowRight, Flame } from "lucide-react";
+import heroImg from "@/assets/hero-awp.jpg";
+
+export function Hero() {
+  return (
+    <section className="relative overflow-hidden rounded-2xl glass-strong">
+      <div className="absolute inset-0">
+        <img src={heroImg} alt="Featured CS2 skin" className="h-full w-full object-cover opacity-50" width={1600} height={900} />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
+      </div>
+      <div className="relative grid gap-6 p-6 md:p-12 md:grid-cols-2">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="space-y-5 max-w-xl"
+        >
+          <span className="inline-flex items-center gap-2 rounded-full glass px-3 py-1 text-xs">
+            <Flame className="h-3 w-3 text-orange-400" />
+            Live market · 18,402 trades today
+          </span>
+          <h1 className="font-display text-4xl md:text-6xl font-bold leading-[1.05]">
+            Trade premium <span className="gradient-text text-glow">CS2 skins</span> with confidence.
+          </h1>
+          <p className="text-muted-foreground">
+            Real-time pricing, verified floats, sticker overlays and sub-second inspect. Built for collectors and pros.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to="/marketplace"
+              className="group inline-flex items-center gap-2 rounded-lg gradient-primary px-5 py-3 text-sm font-semibold text-primary-foreground glow-primary hover:opacity-90"
+            >
+              Browse Marketplace
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+            <Link
+              to="/profile"
+              className="inline-flex items-center gap-2 rounded-lg glass px-5 py-3 text-sm font-semibold hover:bg-white/5"
+            >
+              View My Inventory
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
