@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Bell, Search, Wallet } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { ThemeSwitcher } from "@/components/theme/ThemeSwitcher";
 
 export function TopBar() {
   return (
