@@ -168,6 +168,8 @@ export const SKINS: Skin[] = SKIN_DEFS.flatMap((def, i) => {
       hue: def.hue,
       hue2: def.hue2,
       inspectLink: `steam://rungame/730/76561202255233023/+csgo_econ_action_preview%20S76561198000000000A${100000 + i * 17 + v}D${Math.floor(rand() * 1e16)}`,
+      icon: ICONS[`${def.weapon}|${def.name}`] ?? "",
+      iconUrl: ICONS[`${def.weapon}|${def.name}`] ? steamImage(ICONS[`${def.weapon}|${def.name}`]) : "",
     } as Skin;
   });
 });
