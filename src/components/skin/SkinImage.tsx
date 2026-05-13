@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Crosshair, Sparkles, Zap } from "lucide-react";
-import type { Skin } from "@/lib/skins-data";
+import { ImageOff } from "lucide-react";
+import { steamImage, type Skin } from "@/lib/skins-data";
 
 interface Props {
   skin: Skin;
@@ -8,49 +9,74 @@ interface Props {
 }
 
 /**
- * Stylized skin "image" — a layered, glossy gradient plate that suggests
- * a CS2 skin without using copyrighted assets.
+ * Renders a CS2 skin using Steam's CDN icon (icon_url_large preferred).
+ * Includes:
+ *  - Loading skeleton shimmer
+ *  - Graceful fallback placeholder if the image fails to load
+ *  - Native lazy loading + async decoding
+ *  - Responsive srcSet using Steam's /{size}fx{size}f resizing
  */
 export function SkinImage({ skin, size = "md" }: Props) {
   const heights = { sm: "h-28", md: "h-40", lg: "h-56" }[size];
-  const isKnife = skin.weapon.startsWith("★");
-  const Icon = isKnife ? Sparkles : skin.doppler ? Zap : Crosshair;
+  const [loaded, setLoaded] = useState(false);
+  const [errored, setErrored] = useState(false);
+
+  const has = !!skin.icon;
+  const src = has ? steamImage(skin.icon, 360) : "";
+  const srcSet = has
+    ? `${steamImage(skin.icon, 256)} 256w, ${steamImage(skin.icon, 360)} 360w, ${steamImage(skin.icon, 512)} 512w`
+    : undefined;
+  const sizes = size === "sm" ? "240px" : size === "lg" ? "560px" : "360px";
 
   return (
     <div
       className={`relative ${heights} w-full overflow-hidden rounded-lg`}
       style={{
-        background: `radial-gradient(120% 80% at 30% 30%, hsl(${skin.hue} 90% 55% / 0.55), transparent 60%),
-                     radial-gradient(120% 80% at 80% 70%, hsl(${skin.hue2} 90% 55% / 0.55), transparent 60%),
-                     linear-gradient(135deg, hsl(${skin.hue} 40% 12%), hsl(${skin.hue2} 40% 8%))`,
+        background: `radial-gradient(120% 80% at 30% 30%, hsl(${skin.hue} 90% 55% / 0.35), transparent 60%),
+                     radial-gradient(120% 80% at 80% 70%, hsl(${skin.hue2} 90% 55% / 0.35), transparent 60%),
+                     linear-gradient(135deg, hsl(${skin.hue} 40% 10%), hsl(${skin.hue2} 40% 6%))`,
       }}
     >
-      {/* glossy sheen */}
+      {/* Loading skeleton shimmer */}
+      {!loaded && !errored && (
+        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-white/5 via-white/10 to-white/5" />
+      )}
+
+      {/* Fallback placeholder */}
+      {(errored || !has) && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-white/50">
+          <ImageOff className="h-8 w-8" />
+          <span className="text-[10px] uppercase tracking-wider">No image</span>
+        </div>
+      )}
+
+      {/* Steam CDN image */}
+      {has && !errored && (
+        <motion.img
+          src={src}
+          srcSet={srcSet}
+          sizes={sizes}
+          alt={skin.fullName}
+          loading="lazy"
+          decoding="async"
+          draggable={false}
+          onLoad={() => setLoaded(true)}
+          onError={() => setErrored(true)}
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: loaded ? 1 : 0, scale: loaded ? 1 : 0.96 }}
+          transition={{ duration: 0.35 }}
+          className="absolute inset-0 m-auto h-full w-full object-contain p-3 drop-shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
+        />
+      )}
+
+      {/* Glossy sheen overlay */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-60 mix-blend-overlay"
+        className="pointer-events-none absolute inset-0 opacity-40 mix-blend-overlay"
         style={{
           background:
-            "linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.25) 45%, transparent 60%)",
+            "linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.18) 45%, transparent 60%)",
         }}
       />
-      {/* pattern lines */}
-      <svg className="absolute inset-0 h-full w-full opacity-20" viewBox="0 0 200 100" preserveAspectRatio="none">
-        <defs>
-          <pattern id={`p-${skin.id}`} width="10" height="10" patternUnits="userSpaceOnUse" patternTransform={`rotate(${skin.pattern % 90})`}>
-            <path d="M0 5h10" stroke="white" strokeWidth="0.5" />
-          </pattern>
-        </defs>
-        <rect width="200" height="100" fill={`url(#p-${skin.id})`} />
-      </svg>
-
-      <motion.div
-        initial={{ y: 8, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4 }}
-        className="absolute inset-0 flex items-center justify-center"
-      >
-        <Icon className="h-12 w-12 text-white/90 drop-shadow-[0_0_20px_rgba(255,255,255,0.6)]" />
-      </motion.div>
 
       {skin.stattrak && (
         <span className="absolute left-2 top-2 rounded bg-orange-500/90 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow">

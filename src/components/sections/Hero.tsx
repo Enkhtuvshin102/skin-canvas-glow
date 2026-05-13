@@ -1,14 +1,26 @@
 import { motion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Flame } from "lucide-react";
-import heroImg from "@/assets/hero-awp.jpg";
+import { FEATURED, steamImage } from "@/lib/skins-data";
+
+const HERO_SKIN = FEATURED.find((s) => !!s.icon) ?? FEATURED[0];
 
 export function Hero() {
   return (
     <section className="relative overflow-hidden rounded-2xl glass-strong">
       <div className="absolute inset-0">
-        <img src={heroImg} alt="Featured CS2 skin" className="h-full w-full object-cover opacity-50" width={1600} height={900} />
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
+        {HERO_SKIN?.icon && (
+          <img
+            src={steamImage(HERO_SKIN.icon, 512)}
+            srcSet={`${steamImage(HERO_SKIN.icon, 360)} 360w, ${steamImage(HERO_SKIN.icon, 512)} 512w`}
+            sizes="(min-width: 768px) 50vw, 100vw"
+            alt={HERO_SKIN.fullName}
+            loading="eager"
+            decoding="async"
+            className="absolute right-0 top-1/2 h-[120%] w-[60%] -translate-y-1/2 object-contain opacity-60 drop-shadow-[0_20px_60px_rgba(0,0,0,0.6)]"
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
       </div>
       <div className="relative grid gap-6 p-6 md:p-12 md:grid-cols-2">
         <motion.div
