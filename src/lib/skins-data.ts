@@ -106,7 +106,7 @@ const SKIN_DEFS: Array<Partial<Skin> & { name: string; weapon: string; rarity: R
   { name: "Case Hardened", weapon: "★ Karambit", rarity: "rare", basePrice: 4200, hue: 220, hue2: 35, caseHardenedTier: "Blue Gem T1" },
   { name: "Slaughter", weapon: "★ Bayonet", rarity: "rare", basePrice: 580, hue: 350, hue2: 320 },
   { name: "Howl", weapon: "M4A4", rarity: "rare", basePrice: 5400, hue: 25, hue2: 0 },
-  { name: "Asiimov", weapon: "M4A1-S", rarity: "covert", basePrice: 110, hue: 30, hue2: 350 },
+  { name: "Player Two", weapon: "M4A1-S", rarity: "covert", basePrice: 110, hue: 200, hue2: 320 },
   { name: "Hyper Beast", weapon: "M4A1-S", rarity: "covert", basePrice: 95, hue: 180, hue2: 320 },
   { name: "Printstream", weapon: "M4A1-S", rarity: "covert", basePrice: 230, hue: 0, hue2: 230 },
   { name: "Fire Serpent", weapon: "AK-47", rarity: "covert", basePrice: 720, hue: 90, hue2: 25 },
