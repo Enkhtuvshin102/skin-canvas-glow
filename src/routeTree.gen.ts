@@ -13,6 +13,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiPublicSteamLoginRouteImport } from './routes/api/public/steam/login'
+import { Route as ApiPublicSteamCallbackRouteImport } from './routes/api/public/steam/callback'
 
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
@@ -34,17 +35,24 @@ const ApiPublicSteamLoginRoute = ApiPublicSteamLoginRouteImport.update({
   path: '/api/public/steam/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSteamCallbackRoute = ApiPublicSteamCallbackRouteImport.update({
+  id: '/api/public/steam/callback',
+  path: '/api/public/steam/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/marketplace': typeof MarketplaceRoute
   '/profile': typeof ProfileRoute
+  '/api/public/steam/callback': typeof ApiPublicSteamCallbackRoute
   '/api/public/steam/login': typeof ApiPublicSteamLoginRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/marketplace': typeof MarketplaceRoute
   '/profile': typeof ProfileRoute
+  '/api/public/steam/callback': typeof ApiPublicSteamCallbackRoute
   '/api/public/steam/login': typeof ApiPublicSteamLoginRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,38 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/marketplace': typeof MarketplaceRoute
   '/profile': typeof ProfileRoute
+  '/api/public/steam/callback': typeof ApiPublicSteamCallbackRoute
   '/api/public/steam/login': typeof ApiPublicSteamLoginRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/marketplace' | '/profile' | '/api/public/steam/login'
+  fullPaths:
+    | '/'
+    | '/marketplace'
+    | '/profile'
+    | '/api/public/steam/callback'
+    | '/api/public/steam/login'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/marketplace' | '/profile' | '/api/public/steam/login'
-  id: '__root__' | '/' | '/marketplace' | '/profile' | '/api/public/steam/login'
+  to:
+    | '/'
+    | '/marketplace'
+    | '/profile'
+    | '/api/public/steam/callback'
+    | '/api/public/steam/login'
+  id:
+    | '__root__'
+    | '/'
+    | '/marketplace'
+    | '/profile'
+    | '/api/public/steam/callback'
+    | '/api/public/steam/login'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MarketplaceRoute: typeof MarketplaceRoute
   ProfileRoute: typeof ProfileRoute
+  ApiPublicSteamCallbackRoute: typeof ApiPublicSteamCallbackRoute
   ApiPublicSteamLoginRoute: typeof ApiPublicSteamLoginRoute
 }
 
@@ -99,6 +125,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSteamLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/steam/callback': {
+      id: '/api/public/steam/callback'
+      path: '/api/public/steam/callback'
+      fullPath: '/api/public/steam/callback'
+      preLoaderRoute: typeof ApiPublicSteamCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -106,6 +139,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MarketplaceRoute: MarketplaceRoute,
   ProfileRoute: ProfileRoute,
+  ApiPublicSteamCallbackRoute: ApiPublicSteamCallbackRoute,
   ApiPublicSteamLoginRoute: ApiPublicSteamLoginRoute,
 }
 export const routeTree = rootRouteImport
