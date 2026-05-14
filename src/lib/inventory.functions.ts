@@ -17,7 +17,7 @@ async function getCachedInventory(steamId: string): Promise<InventoryItem[]> {
   const items = await fetchSteamInventory(steamId);
   await supabaseAdmin
     .from("inventory_cache")
-    .upsert({ steam_id: steamId, items: items as unknown as object, fetched_at: new Date().toISOString() });
+    .upsert({ steam_id: steamId, items: items as never, fetched_at: new Date().toISOString() });
   return items;
 }
 
