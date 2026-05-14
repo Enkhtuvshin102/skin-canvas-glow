@@ -1,7 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import {
-  Home, Store, User, TrendingUp, Sparkles, Package, Wallet, Shield, MessagesSquare, Settings,
-} from "lucide-react";
+import { Home, Store, Package, ListOrdered, TrendingUp, Sparkles } from "lucide-react";
 
 const sections = [
   {
@@ -9,7 +7,8 @@ const sections = [
     items: [
       { to: "/", label: "Home", icon: Home },
       { to: "/marketplace", label: "Marketplace", icon: Store },
-      { to: "/profile", label: "My Inventory", icon: User },
+      { to: "/inventory", label: "My Inventory", icon: Package },
+      { to: "/my-listings", label: "My Listings", icon: ListOrdered },
     ],
   },
   {
@@ -17,16 +16,6 @@ const sections = [
     items: [
       { to: "/marketplace", label: "Trending", icon: TrendingUp },
       { to: "/marketplace", label: "New Listings", icon: Sparkles },
-      { to: "/marketplace", label: "Cases", icon: Package },
-    ],
-  },
-  {
-    label: "Account",
-    items: [
-      { to: "/profile", label: "Wallet", icon: Wallet },
-      { to: "/profile", label: "Trade Offers", icon: MessagesSquare },
-      { to: "/profile", label: "Security", icon: Shield },
-      { to: "/profile", label: "Settings", icon: Settings },
     ],
   },
 ];
@@ -42,7 +31,7 @@ export function AppSidebar() {
         </div>
         <div className="leading-tight">
           <p className="font-display text-lg font-bold tracking-wide text-glow">FRAGMARKET</p>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">CS2 Skin Market</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">P2P CS2 Market</p>
         </div>
       </Link>
 
@@ -78,11 +67,11 @@ export function AppSidebar() {
       </nav>
 
       <div className="m-3 rounded-xl glass p-4">
-        <p className="text-xs text-muted-foreground">Wallet Balance</p>
-        <p className="font-display text-2xl font-bold gradient-text">$2,481.50</p>
-        <button className="mt-3 w-full rounded-lg gradient-primary py-2 text-xs font-semibold text-primary-foreground hover:opacity-90">
-          Deposit Funds
-        </button>
+        <p className="text-xs text-muted-foreground">P2P trading</p>
+        <p className="font-display text-sm font-bold gradient-text mt-1">No bots. No custody.</p>
+        <p className="text-[10px] text-muted-foreground mt-2">
+          Items stay in your Steam inventory until you trade them yourself.
+        </p>
       </div>
     </aside>
   );
