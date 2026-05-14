@@ -14,7 +14,126 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      inventory_cache: {
+        Row: {
+          fetched_at: string
+          items: Json
+          steam_id: string
+        }
+        Insert: {
+          fetched_at?: string
+          items?: Json
+          steam_id: string
+        }
+        Update: {
+          fetched_at?: string
+          items?: Json
+          steam_id?: string
+        }
+        Relationships: []
+      }
+      listings: {
+        Row: {
+          asset_id: string
+          created_at: string
+          float: number
+          icon_url: string | null
+          id: string
+          inspect_link: string
+          last_validated_at: string
+          market_hash_name: string
+          name: string
+          pattern: number
+          price_usd: number
+          rarity: string
+          seller_id: string
+          stattrak: boolean
+          status: Database["public"]["Enums"]["listing_status"]
+          steam_id: string
+          stickers: Json
+          updated_at: string
+          weapon: string
+          wear: string
+        }
+        Insert: {
+          asset_id: string
+          created_at?: string
+          float: number
+          icon_url?: string | null
+          id?: string
+          inspect_link: string
+          last_validated_at?: string
+          market_hash_name: string
+          name: string
+          pattern: number
+          price_usd: number
+          rarity?: string
+          seller_id: string
+          stattrak?: boolean
+          status?: Database["public"]["Enums"]["listing_status"]
+          steam_id: string
+          stickers?: Json
+          updated_at?: string
+          weapon: string
+          wear: string
+        }
+        Update: {
+          asset_id?: string
+          created_at?: string
+          float?: number
+          icon_url?: string | null
+          id?: string
+          inspect_link?: string
+          last_validated_at?: string
+          market_hash_name?: string
+          name?: string
+          pattern?: number
+          price_usd?: number
+          rarity?: string
+          seller_id?: string
+          stattrak?: boolean
+          status?: Database["public"]["Enums"]["listing_status"]
+          steam_id?: string
+          stickers?: Json
+          updated_at?: string
+          weapon?: string
+          wear?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          last_inventory_sync: string | null
+          persona: string | null
+          profile_url: string | null
+          steam_id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id: string
+          last_inventory_sync?: string | null
+          persona?: string | null
+          profile_url?: string | null
+          steam_id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          last_inventory_sync?: string | null
+          persona?: string | null
+          profile_url?: string | null
+          steam_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +142,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      listing_status: "active" | "sold" | "unavailable" | "removed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +269,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      listing_status: ["active", "sold", "unavailable", "removed"],
+    },
   },
 } as const
