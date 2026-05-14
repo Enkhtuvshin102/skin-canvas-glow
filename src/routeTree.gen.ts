@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiPublicSteamLoginRouteImport } from './routes/api/public/steam/login'
 
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
@@ -28,35 +29,44 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSteamLoginRoute = ApiPublicSteamLoginRouteImport.update({
+  id: '/api/public/steam/login',
+  path: '/api/public/steam/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/marketplace': typeof MarketplaceRoute
   '/profile': typeof ProfileRoute
+  '/api/public/steam/login': typeof ApiPublicSteamLoginRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/marketplace': typeof MarketplaceRoute
   '/profile': typeof ProfileRoute
+  '/api/public/steam/login': typeof ApiPublicSteamLoginRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/marketplace': typeof MarketplaceRoute
   '/profile': typeof ProfileRoute
+  '/api/public/steam/login': typeof ApiPublicSteamLoginRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/marketplace' | '/profile'
+  fullPaths: '/' | '/marketplace' | '/profile' | '/api/public/steam/login'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/marketplace' | '/profile'
-  id: '__root__' | '/' | '/marketplace' | '/profile'
+  to: '/' | '/marketplace' | '/profile' | '/api/public/steam/login'
+  id: '__root__' | '/' | '/marketplace' | '/profile' | '/api/public/steam/login'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MarketplaceRoute: typeof MarketplaceRoute
   ProfileRoute: typeof ProfileRoute
+  ApiPublicSteamLoginRoute: typeof ApiPublicSteamLoginRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/steam/login': {
+      id: '/api/public/steam/login'
+      path: '/api/public/steam/login'
+      fullPath: '/api/public/steam/login'
+      preLoaderRoute: typeof ApiPublicSteamLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,7 +106,18 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MarketplaceRoute: MarketplaceRoute,
   ProfileRoute: ProfileRoute,
+  ApiPublicSteamLoginRoute: ApiPublicSteamLoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
