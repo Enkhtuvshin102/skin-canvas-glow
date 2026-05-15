@@ -1,20 +1,23 @@
 import { motion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Flame } from "lucide-react";
-import { FEATURED, steamImage } from "@/lib/skins-data";
+import { steamImage } from "@/lib/skins-data";
 
-const HERO_SKIN = FEATURED.find((s) => !!s.icon) ?? FEATURED[0];
+interface HeroProps {
+  featuredIcon?: string | null;
+  featuredName?: string | null;
+}
 
-export function Hero() {
+export function Hero({ featuredIcon, featuredName }: HeroProps) {
   return (
     <section className="relative overflow-hidden rounded-2xl glass-strong">
       <div className="absolute inset-0">
-        {HERO_SKIN?.icon && (
+        {featuredIcon && (
           <img
-            src={steamImage(HERO_SKIN.icon, 512)}
-            srcSet={`${steamImage(HERO_SKIN.icon, 360)} 360w, ${steamImage(HERO_SKIN.icon, 512)} 512w`}
+            src={steamImage(featuredIcon, 512)}
+            srcSet={`${steamImage(featuredIcon, 360)} 360w, ${steamImage(featuredIcon, 512)} 512w`}
             sizes="(min-width: 768px) 50vw, 100vw"
-            alt={HERO_SKIN.fullName}
+            alt={featuredName ?? "Featured listing"}
             loading="eager"
             decoding="async"
             className="absolute right-0 top-1/2 h-[120%] w-[60%] -translate-y-1/2 object-contain opacity-60 drop-shadow-[0_20px_60px_rgba(0,0,0,0.6)]"
@@ -31,7 +34,7 @@ export function Hero() {
         >
           <span className="inline-flex items-center gap-2 rounded-full glass px-3 py-1 text-xs">
             <Flame className="h-3 w-3 text-orange-400" />
-            Live market · 18,402 trades today
+            Live P2P market · items stay in seller inventories
           </span>
           <h1 className="font-display text-4xl md:text-6xl font-bold leading-[1.05]">
             Trade premium <span className="gradient-text text-glow">CS2 skins</span> with confidence.
@@ -48,10 +51,10 @@ export function Hero() {
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
             <Link
-              to="/profile"
+              to="/inventory"
               className="inline-flex items-center gap-2 rounded-lg glass px-5 py-3 text-sm font-semibold hover:bg-white/5"
             >
-              View My Inventory
+              List From Inventory
             </Link>
           </div>
         </motion.div>
