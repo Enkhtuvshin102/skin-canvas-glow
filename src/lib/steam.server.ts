@@ -100,6 +100,7 @@ export async function fetchSteamInventory(steamId: string): Promise<InventoryIte
       tradable: number;
       tags?: Array<{ category: string; localized_tag_name: string; internal_name?: string }>;
       actions?: Array<{ link: string; name: string }>;
+      descriptions?: Array<{ type?: string; value?: string; name?: string }>;
       type?: string;
     }>;
   };
@@ -112,7 +113,6 @@ export async function fetchSteamInventory(steamId: string): Promise<InventoryIte
   for (const a of data.assets) {
     const d = descMap.get(`${a.classid}_${a.instanceid}`);
     if (!d) continue;
-    // Filter to weapon skins only (have an exterior tag)
     const wearTag = d.tags?.find((t) => t.category === "Exterior")?.localized_tag_name;
     if (!wearTag) continue;
     const weaponTag =
@@ -139,37 +139,49 @@ export async function fetchSteamInventory(steamId: string): Promise<InventoryIte
       stattrak,
       tradable: d.tradable === 1,
       inspect_link,
+      stickers: parseStickers(d.descriptions),
     });
   }
   return items;
 }
 
-/** Deterministic hash → fake float/pattern from inspect link / asset id. */
-export function mockInspect(seed: string, wear: string): { float: number; pattern: number; stickers: Array<{ name: string; wear: number }> } {
+/**
+ * Parse real applied stickers from inventory description blocks. Steam exposes
+ * them as `Sticker: Name1, Name2, Name3, Name4`. Returns [] when the line is
+ * missing — items without stickers must NEVER receive fallback/default data.
+ */
+function parseStickers(blocks?: Array<{ type?: string; value?: string; name?: string }>): Sticker[] {
+  if (!blocks?.length) return [];
+  for (const b of blocks) {
+    const v = b.value;
+    if (!v) continue;
+    const text = v.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    const m = text.match(/^Sticker:\s*(.+)$/i);
+    if (!m) continue;
+    const names = m[1]
+      .split(",")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    if (!names.length) return [];
+    return names.slice(0, 4).map((name) => ({ name }));
+  }
+  return [];
+}
+
+/** Deterministic float + pattern from inspect link / asset id. Stickers come from real inventory metadata only. */
+export function mockInspect(seed: string, wear: string): { float: number; pattern: number } {
   let h = 2166136261;
   for (let i = 0; i < seed.length; i++) {
     h ^= seed.charCodeAt(i);
     h = Math.imul(h, 16777619);
   }
   const u = (h >>> 0) / 0xffffffff;
-  // Wear-bounded float
   const ranges: Record<string, [number, number]> = {
     FN: [0, 0.07], MW: [0.07, 0.15], FT: [0.15, 0.38], WW: [0.38, 0.45], BS: [0.45, 1],
   };
   const [lo, hi] = ranges[wear] ?? [0.15, 0.38];
   const float = +(lo + u * (hi - lo)).toFixed(6);
   const pattern = Math.floor(u * 1000);
-  const stickerPool = [
-    "Katowice 2014 | Titan (Holo)",
-    "IEM Cologne 2023 | NAVI (Gold)",
-    "Stockholm 2021 | s1mple",
-    "Crown (Foil)",
-    "Howling Dawn",
-  ];
-  const stickerCount = Math.floor(u * 4); // 0..3
-  const stickers = Array.from({ length: stickerCount }, (_, i) => ({
-    name: stickerPool[(Math.floor(u * 1000) + i) % stickerPool.length],
-    wear: +(((u * (i + 1)) % 1)).toFixed(2),
-  }));
-  return { float, pattern, stickers };
+  return { float, pattern };
 }
+
