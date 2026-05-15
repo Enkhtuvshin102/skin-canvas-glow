@@ -33,7 +33,8 @@ export const createListing = createServerFn({ method: "POST" })
     if (!item.tradable) throw new Error("This item is currently not tradable.");
 
     const seed = item.inspect_link || item.asset_id;
-    const { float, pattern, stickers } = mockInspect(seed, item.wear);
+    const { float, pattern } = mockInspect(seed, item.wear);
+    const stickers = item.stickers ?? [];
 
     const { data: inserted, error } = await supabaseAdmin
       .from("listings")
