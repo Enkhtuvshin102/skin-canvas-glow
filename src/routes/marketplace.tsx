@@ -1,15 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { motion } from "framer-motion";
+import { createFileRoute } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { steamImage, type Wear } from "@/lib/skins-data";
-import { FloatBar } from "@/components/skin/FloatBar";
+import { type Wear } from "@/lib/skins-data";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ListingCard } from "@/components/skin/ListingCard";
+import { useListings } from "@/hooks/use-listings";
 
 export const Route = createFileRoute("/marketplace")({
   head: () => ({
