@@ -35,7 +35,7 @@ function ListingDetail() {
     <div className="mx-auto max-w-5xl grid md:grid-cols-[1.2fr_1fr] gap-6">
       <div className="rounded-xl glass p-6">
         <div className="aspect-[4/3] bg-black/30 rounded-lg grid place-items-center overflow-hidden">
-          <img src={steamImage(listing.icon_url, 512)} alt={listing.market_hash_name} className="max-h-full max-w-full object-contain" />
+          <img src={steamImage(listing.icon_url ?? "", 512)} alt={listing.market_hash_name} className="max-h-full max-w-full object-contain" />
         </div>
         <div className="mt-4">
           <p className="text-xs uppercase text-muted-foreground">{listing.weapon} · {listing.wear}</p>
