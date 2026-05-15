@@ -55,6 +55,10 @@ export async function fetchSteamProfile(steamId: string): Promise<SteamProfile |
   return json.response?.players?.[0] ?? null;
 }
 
+export interface Sticker {
+  name: string;
+}
+
 export interface InventoryItem {
   asset_id: string;
   market_hash_name: string;
@@ -66,6 +70,7 @@ export interface InventoryItem {
   stattrak: boolean;
   tradable: boolean;
   inspect_link: string;
+  stickers: Sticker[];
 }
 
 const WEAR_RE = /\((Factory New|Minimal Wear|Field-Tested|Well-Worn|Battle-Scarred)\)/;
