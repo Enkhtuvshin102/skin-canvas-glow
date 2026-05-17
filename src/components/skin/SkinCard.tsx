@@ -73,7 +73,7 @@ export function SkinCard({ skin, compact }: Props) {
 
           {skin.stickers && (
             <div className="flex flex-wrap gap-1">
-              {skin.stickers.slice(0, 3).map((s, i) => (
+              {skin.stickers.map((s, i) => (
                 <span
                   key={i}
                   title={`${s.name} · ${Math.round((s.wear ?? 0) * 100)}% wear`}
