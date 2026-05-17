@@ -173,7 +173,7 @@ function parseStickers(blocks?: Array<{ type?: string; value?: string; name?: st
     }
   }
   if (!names.length) return [];
-  return names.slice(0, 4).map((name, i) => ({ name, slot: i, image: imgs[i] }));
+  return names.map((name, i) => ({ name, slot: i, image: imgs[i] }));
 }
 
 /** Deterministic float + pattern from inspect link / asset id. Stickers come from real inventory metadata only. */

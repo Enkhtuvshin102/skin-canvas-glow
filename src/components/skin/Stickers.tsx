@@ -55,7 +55,7 @@ function normalize(raw: unknown): NormalizedSticker[] {
     const wear = typeof obj.wear === "number" && Number.isFinite(obj.wear) ? obj.wear : undefined;
     out.push({ name, image, wear, slot });
   });
-  return out.sort((a, b) => a.slot - b.slot).slice(0, 4);
+  return out.sort((a, b) => a.slot - b.slot);
 }
 
 const StickerImage = memo(function StickerImage({ src, alt }: { src?: string; alt: string }) {
@@ -94,7 +94,9 @@ const StickerImage = memo(function StickerImage({ src, alt }: { src?: string; al
 export function Stickers({ stickers, size = "sm", showWear = false }: Props) {
   const list = useMemo(() => normalize(stickers), [stickers]);
   if (!list.length) return null;
-  const box = size === "sm" ? "h-8 w-8" : "h-12 w-12";
+  const box = size === "sm"
+    ? list.length >= 5 ? "h-7 w-7" : "h-8 w-8"
+    : "h-12 w-12";
 
   return (
     <TooltipProvider delayDuration={150}>
