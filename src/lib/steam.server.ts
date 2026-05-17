@@ -149,8 +149,9 @@ export async function fetchSteamInventory(steamId: string): Promise<InventoryIte
 
 /**
  * Parse real applied stickers from inventory description blocks. Steam exposes
- * them as `Sticker: Name1, Name2, Name3, Name4`. Returns [] when the line is
- * missing — items without stickers must NEVER receive fallback/default data.
+ * them as an HTML block: `<img src="..."><img src="...">...<br>Sticker: N1, N2, N3, N4`.
+ * Returns [] when the line is missing — items without stickers must NEVER receive
+ * fallback/default data. Preserves slot order and pairs images with names.
  */
 function parseStickers(blocks?: Array<{ type?: string; value?: string; name?: string }>): Sticker[] {
   if (!blocks?.length) return [];
@@ -158,14 +159,19 @@ function parseStickers(blocks?: Array<{ type?: string; value?: string; name?: st
     const v = b.value;
     if (!v) continue;
     const text = v.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-    const m = text.match(/^Sticker:\s*(.+)$/i);
+    const m = text.match(/Sticker:\s*(.+?)(?:\s*$)/i);
     if (!m) continue;
     const names = m[1]
       .split(",")
       .map((s) => s.trim())
       .filter((s) => s.length > 0);
     if (!names.length) return [];
-    return names.slice(0, 4).map((name) => ({ name }));
+    const imgs = Array.from(v.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)).map((mm) => mm[1]);
+    return names.slice(0, 4).map((name, i) => ({
+      name,
+      slot: i,
+      image: imgs[i],
+    }));
   }
   return [];
 }
