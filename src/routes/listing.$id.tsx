@@ -46,10 +46,12 @@ function ListingDetail() {
           <FloatBar float={Number(listing.float)} wear={listing.wear as any} />
           <p className="mt-2 text-xs text-muted-foreground">Pattern #{listing.pattern} · Asset {listing.asset_id}</p>
         </div>
-        <div className="mt-4">
-          <p className="text-xs uppercase text-muted-foreground mb-2">Stickers</p>
-          <Stickers stickers={listing.stickers} size="md" showWear />
-        </div>
+        {Array.isArray(listing.stickers) && listing.stickers.length > 0 && (
+          <div className="mt-4">
+            <p className="text-xs uppercase text-muted-foreground mb-2">Stickers</p>
+            <Stickers stickers={listing.stickers} size="md" showWear />
+          </div>
+        )}
       </div>
 
       <div className="space-y-4">
