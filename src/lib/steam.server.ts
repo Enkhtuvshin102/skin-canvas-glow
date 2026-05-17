@@ -155,25 +155,25 @@ export async function fetchSteamInventory(steamId: string): Promise<InventoryIte
  */
 function parseStickers(blocks?: Array<{ type?: string; value?: string; name?: string }>): Sticker[] {
   if (!blocks?.length) return [];
+  let names: string[] = [];
+  const imgs: string[] = [];
   for (const b of blocks) {
     const v = b.value;
     if (!v) continue;
-    const text = v.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-    const m = text.match(/Sticker:\s*(.+?)(?:\s*$)/i);
-    if (!m) continue;
-    const names = m[1]
-      .split(",")
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
-    if (!names.length) return [];
-    const imgs = Array.from(v.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)).map((mm) => mm[1]);
-    return names.slice(0, 4).map((name, i) => ({
-      name,
-      slot: i,
-      image: imgs[i],
-    }));
+    // Collect any sticker images present in any description block
+    for (const mm of v.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)) {
+      imgs.push(mm[1]);
+    }
+    if (!names.length) {
+      const text = v.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+      const m = text.match(/Sticker:\s*(.+?)\s*$/i);
+      if (m) {
+        names = m[1].split(",").map((s) => s.trim()).filter(Boolean);
+      }
+    }
   }
-  return [];
+  if (!names.length) return [];
+  return names.slice(0, 4).map((name, i) => ({ name, slot: i, image: imgs[i] }));
 }
 
 /** Deterministic float + pattern from inspect link / asset id. Stickers come from real inventory metadata only. */
