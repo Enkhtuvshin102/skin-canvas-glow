@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { steamImage } from "@/lib/skins-data";
 import { FloatBar } from "@/components/skin/FloatBar";
+import { Stickers } from "@/components/skin/Stickers";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExternalLink, Eye } from "lucide-react";
