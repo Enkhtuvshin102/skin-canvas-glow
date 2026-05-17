@@ -57,6 +57,8 @@ export async function fetchSteamProfile(steamId: string): Promise<SteamProfile |
 
 export interface Sticker {
   name: string;
+  slot: number;
+  image?: string;
 }
 
 export interface InventoryItem {
