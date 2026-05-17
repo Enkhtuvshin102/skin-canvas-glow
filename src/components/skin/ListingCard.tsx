@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { steamImage, type Wear } from "@/lib/skins-data";
 import { FloatBar } from "@/components/skin/FloatBar";
+import { Stickers } from "@/components/skin/Stickers";
 import type { Listing } from "@/hooks/use-listings";
 
 const STATUS_BADGE: Record<string, string> = {
@@ -12,7 +13,6 @@ const STATUS_BADGE: Record<string, string> = {
 };
 
 export function ListingCard({ listing }: { listing: Listing }) {
-  const stickers = (listing.stickers as Array<{ name: string }> | null) ?? [];
   return (
     <Link to="/listing/$id" params={{ id: listing.id }} className="block">
       <motion.div whileHover={{ y: -4 }} className="relative overflow-hidden rounded-xl glass hover:glow-primary transition-shadow">
