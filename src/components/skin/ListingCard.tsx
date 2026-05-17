@@ -41,12 +41,8 @@ export function ListingCard({ listing }: { listing: Listing }) {
             <FloatBar float={Number(listing.float)} wear={listing.wear as Wear} />
             <div className="flex items-center justify-between text-[11px] text-muted-foreground">
               <span className="truncate">Seller {listing.steam_id.slice(-6)}</span>
-              {stickers.length > 0 && (
-                <span>
-                  {stickers.length} sticker{stickers.length > 1 ? "s" : ""}
-                </span>
-              )}
             </div>
+            <Stickers stickers={listing.stickers} size="sm" />
             <div className="flex items-end justify-between pt-1">
               <div>
                 <p className="text-[10px] uppercase text-muted-foreground">Price</p>
