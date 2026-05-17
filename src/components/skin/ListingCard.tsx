@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { steamImage, type Wear } from "@/lib/skins-data";
 import { FloatBar } from "@/components/skin/FloatBar";
+import { Stickers } from "@/components/skin/Stickers";
 import type { Listing } from "@/hooks/use-listings";
 
 const STATUS_BADGE: Record<string, string> = {
@@ -12,7 +13,6 @@ const STATUS_BADGE: Record<string, string> = {
 };
 
 export function ListingCard({ listing }: { listing: Listing }) {
-  const stickers = (listing.stickers as Array<{ name: string }> | null) ?? [];
   return (
     <Link to="/listing/$id" params={{ id: listing.id }} className="block">
       <motion.div whileHover={{ y: -4 }} className="relative overflow-hidden rounded-xl glass hover:glow-primary transition-shadow">
@@ -41,12 +41,8 @@ export function ListingCard({ listing }: { listing: Listing }) {
             <FloatBar float={Number(listing.float)} wear={listing.wear as Wear} />
             <div className="flex items-center justify-between text-[11px] text-muted-foreground">
               <span className="truncate">Seller {listing.steam_id.slice(-6)}</span>
-              {stickers.length > 0 && (
-                <span>
-                  {stickers.length} sticker{stickers.length > 1 ? "s" : ""}
-                </span>
-              )}
             </div>
+            <Stickers stickers={listing.stickers} size="sm" />
             <div className="flex items-end justify-between pt-1">
               <div>
                 <p className="text-[10px] uppercase text-muted-foreground">Price</p>

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { steamImage } from "@/lib/skins-data";
 import { FloatBar } from "@/components/skin/FloatBar";
+import { Stickers } from "@/components/skin/Stickers";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExternalLink, Eye } from "lucide-react";
@@ -45,14 +46,10 @@ function ListingDetail() {
           <FloatBar float={Number(listing.float)} wear={listing.wear as any} />
           <p className="mt-2 text-xs text-muted-foreground">Pattern #{listing.pattern} · Asset {listing.asset_id}</p>
         </div>
-        {stickers.length > 0 && (
+        {Array.isArray(listing.stickers) && listing.stickers.length > 0 && (
           <div className="mt-4">
             <p className="text-xs uppercase text-muted-foreground mb-2">Stickers</p>
-            <div className="flex flex-wrap gap-1.5">
-              {stickers.map((s, i) => (
-                <span key={i} className="rounded bg-white/5 px-2 py-1 text-xs">{s.name} · {Math.round(s.wear * 100)}%</span>
-              ))}
-            </div>
+            <Stickers stickers={listing.stickers} size="md" showWear />
           </div>
         )}
       </div>
