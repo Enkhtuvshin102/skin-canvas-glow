@@ -55,7 +55,7 @@ function normalize(raw: unknown): NormalizedSticker[] {
     const wear = typeof obj.wear === "number" && Number.isFinite(obj.wear) ? obj.wear : undefined;
     out.push({ name, image, wear, slot });
   });
-  return out.sort((a, b) => a.slot - b.slot).slice(0, 4);
+  return out.sort((a, b) => a.slot - b.slot);
 }
 
 const StickerImage = memo(function StickerImage({ src, alt }: { src?: string; alt: string }) {
