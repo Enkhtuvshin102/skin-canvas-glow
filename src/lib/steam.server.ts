@@ -154,7 +154,7 @@ export async function fetchSteamInventory(steamId: string): Promise<InventoryIte
 
 /**
  * Parse real applied stickers from inventory description blocks. Steam exposes
- * them as an HTML block: `<img src="..."><img src="...">...<br>Sticker: N1, N2, N3, N4`.
+ * them as HTML blocks with one image per sticker plus a `Sticker:` name line.
  * Returns [] when the line is missing — items without stickers must NEVER receive
  * fallback/default data. Preserves slot order and pairs images with names.
  */
