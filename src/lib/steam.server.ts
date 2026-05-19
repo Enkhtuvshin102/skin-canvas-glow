@@ -75,6 +75,19 @@ export interface InventoryItem {
   stickers: Sticker[];
 }
 
+type SteamInventoryDescription = {
+  classid: string;
+  instanceid: string;
+  market_hash_name: string;
+  name: string;
+  icon_url: string;
+  tradable: number;
+  tags?: Array<{ category: string; localized_tag_name: string; internal_name?: string }>;
+  actions?: Array<{ link: string; name: string }>;
+  descriptions?: Array<{ type?: string; value?: string; name?: string }>;
+  type?: string;
+};
+
 const WEAR_RE = /\((Factory New|Minimal Wear|Field-Tested|Well-Worn|Battle-Scarred)\)/;
 const WEAR_SHORT: Record<string, string> = {
   "Factory New": "FN",
@@ -93,18 +106,7 @@ export async function fetchSteamInventory(steamId: string): Promise<InventoryIte
   }
   const data = (await res.json()) as {
     assets?: Array<{ assetid: string; classid: string; instanceid: string }>;
-    descriptions?: Array<{
-      classid: string;
-      instanceid: string;
-      market_hash_name: string;
-      name: string;
-      icon_url: string;
-      tradable: number;
-      tags?: Array<{ category: string; localized_tag_name: string; internal_name?: string }>;
-      actions?: Array<{ link: string; name: string }>;
-      descriptions?: Array<{ type?: string; value?: string; name?: string }>;
-      type?: string;
-    }>;
+    descriptions?: SteamInventoryDescription[];
   };
   if (!data.assets || !data.descriptions) return [];
 
@@ -230,12 +232,7 @@ function logStickerParseDebug({
   stickers,
 }: {
   assetId: string;
-  description: NonNullable<Awaited<ReturnType<typeof fetchSteamInventory>>>[number] extends never ? never : {
-    market_hash_name: string;
-    actions?: Array<{ link: string; name: string }>;
-    tags?: Array<{ category: string; localized_tag_name: string; internal_name?: string }>;
-    descriptions?: Array<{ type?: string; value?: string; name?: string }>;
-  };
+  description: SteamInventoryDescription;
   stickers: Sticker[];
 }) {
   const raw = readStickerMetadata(description.descriptions);
