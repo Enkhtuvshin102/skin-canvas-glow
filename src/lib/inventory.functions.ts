@@ -4,6 +4,9 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fetchSteamInventory, type InventoryItem } from "@/lib/steam.server";
 
 const CACHE_TTL_MS = 15 * 60 * 1000;
+const STICKER_PARSER_VERSION = 2;
+
+type CachedInventoryItem = InventoryItem & { sticker_parser_version?: number };
 
 async function getCachedInventory(steamId: string): Promise<InventoryItem[]> {
   const { data: cached } = await supabaseAdmin
@@ -11,14 +14,17 @@ async function getCachedInventory(steamId: string): Promise<InventoryItem[]> {
     .select("items, fetched_at")
     .eq("steam_id", steamId)
     .maybeSingle();
-  if (cached && Date.now() - new Date(cached.fetched_at).getTime() < CACHE_TTL_MS) {
-    return (cached.items as unknown as InventoryItem[]) ?? [];
+  const cachedItems = (cached?.items as unknown as CachedInventoryItem[] | null) ?? [];
+  const cacheHasCurrentStickerParser = cachedItems.every((item) => item.sticker_parser_version === STICKER_PARSER_VERSION);
+  if (cached && cacheHasCurrentStickerParser && Date.now() - new Date(cached.fetched_at).getTime() < CACHE_TTL_MS) {
+    return cachedItems;
   }
   const items = await fetchSteamInventory(steamId);
+  const versionedItems = items.map((item) => ({ ...item, sticker_parser_version: STICKER_PARSER_VERSION }));
   await supabaseAdmin
     .from("inventory_cache")
-    .upsert({ steam_id: steamId, items: items as never, fetched_at: new Date().toISOString() });
-  return items;
+    .upsert({ steam_id: steamId, items: versionedItems as never, fetched_at: new Date().toISOString() });
+  return versionedItems;
 }
 
 export const getMyInventory = createServerFn({ method: "GET" })
