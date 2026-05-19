@@ -9,6 +9,23 @@ const CreateSchema = z.object({
   price_usd: z.number().min(0.01).max(1_000_000),
 });
 
+function logListingStickerValidation(source: string, assetId: string, stickers: InventoryItem["stickers"], storedCount?: number) {
+  const parsedCount = stickers.length;
+  if (parsedCount >= 5 || storedCount !== undefined && storedCount !== parsedCount) {
+    console.info("[steam stickers] listing sticker validation", {
+      source,
+      asset_id: assetId,
+      stored_sticker_count: storedCount,
+      parsed_sticker_count: parsedCount,
+      final_sticker_count: parsedCount,
+    });
+  }
+}
+
+function stickerCount(raw: unknown): number {
+  return Array.isArray(raw) ? raw.length : 0;
+}
+
 export const createListing = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => CreateSchema.parse(d))
@@ -35,6 +52,7 @@ export const createListing = createServerFn({ method: "POST" })
     const seed = item.inspect_link || item.asset_id;
     const { float, pattern } = mockInspect(seed, item.wear);
     const stickers = item.stickers ?? [];
+    logListingStickerValidation("createListing", item.asset_id, stickers);
 
     const { data: inserted, error } = await supabaseAdmin
       .from("listings")
@@ -98,18 +116,20 @@ export const relistListing = createServerFn({ method: "POST" })
     const { userId } = context;
     const { data: row } = await supabaseAdmin
       .from("listings")
-      .select("asset_id, steam_id, seller_id")
+      .select("asset_id, steam_id, seller_id, stickers")
       .eq("id", data.id)
       .maybeSingle();
     if (!row || row.seller_id !== userId) throw new Error("Listing not found");
     // Re-validate ownership
     const items = await fetchSteamInventory(row.steam_id);
-    if (!items.some((i) => i.asset_id === row.asset_id)) {
+    const item = items.find((i) => i.asset_id === row.asset_id);
+    if (!item) {
       throw new Error("Item is no longer in your Steam inventory.");
     }
+    logListingStickerValidation("relistListing", row.asset_id, item.stickers, stickerCount(row.stickers));
     const { error } = await supabaseAdmin
       .from("listings")
-      .update({ status: "active", price_usd: data.price_usd, last_validated_at: new Date().toISOString() })
+      .update({ status: "active", price_usd: data.price_usd, stickers: item.stickers as never, last_validated_at: new Date().toISOString() })
       .eq("id", data.id);
     if (error) throw error;
     return { ok: true };
@@ -128,7 +148,7 @@ export const revalidateMyListings = createServerFn({ method: "POST" })
     if (!profile?.steam_id) return { checked: 0, marked: 0 };
     const { data: rows } = await supabaseAdmin
       .from("listings")
-      .select("id, asset_id")
+      .select("id, asset_id, stickers")
       .eq("seller_id", userId)
       .eq("status", "active");
     if (!rows?.length) return { checked: 0, marked: 0 };
@@ -139,6 +159,7 @@ export const revalidateMyListings = createServerFn({ method: "POST" })
       return { checked: rows.length, marked: 0 };
     }
     const owned = new Set(items.map((i) => i.asset_id));
+    const itemByAssetId = new Map(items.map((item) => [item.asset_id, item]));
     const missing = rows.filter((r) => !owned.has(r.asset_id)).map((r) => r.id);
     if (missing.length) {
       await supabaseAdmin
@@ -146,10 +167,15 @@ export const revalidateMyListings = createServerFn({ method: "POST" })
         .update({ status: "unavailable", last_validated_at: new Date().toISOString() })
         .in("id", missing);
     } else {
-      await supabaseAdmin
-        .from("listings")
-        .update({ last_validated_at: new Date().toISOString() })
-        .in("id", rows.map((r) => r.id));
+      await Promise.all(rows.map((row) => {
+        const item = itemByAssetId.get(row.asset_id);
+        const stickers = item?.stickers ?? [];
+        logListingStickerValidation("revalidateMyListings", row.asset_id, stickers, stickerCount(row.stickers));
+        return supabaseAdmin
+          .from("listings")
+          .update({ stickers: stickers as never, last_validated_at: new Date().toISOString() })
+          .eq("id", row.id);
+      }));
     }
     return { checked: rows.length, marked: missing.length };
   });

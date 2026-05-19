@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { getMyInventory } from "@/lib/inventory.functions";
 import { createListing } from "@/lib/listings.functions";
 import { steamImage } from "@/lib/skins-data";
+import { Stickers } from "@/components/skin/Stickers";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/inventory")({
 type Item = {
   asset_id: string; market_hash_name: string; name: string; weapon: string;
   wear: string; icon_url: string; rarity: string; stattrak: boolean;
-  tradable: boolean; inspect_link: string; listed?: boolean;
+  tradable: boolean; inspect_link: string; listed?: boolean; stickers?: unknown;
 };
 
 function InventoryPage() {
@@ -118,6 +119,9 @@ function InventoryCard({ item, onListed }: { item: Item; onListed: () => void })
           {item.stattrak && <span className="text-orange-400">ST™ </span>}
           {item.name}
         </p>
+      </div>
+      <div className="mt-2 min-h-7">
+        <Stickers stickers={item.stickers} size="sm" />
       </div>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>

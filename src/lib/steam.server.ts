@@ -75,6 +75,19 @@ export interface InventoryItem {
   stickers: Sticker[];
 }
 
+type SteamInventoryDescription = {
+  classid: string;
+  instanceid: string;
+  market_hash_name: string;
+  name: string;
+  icon_url: string;
+  tradable: number;
+  tags?: Array<{ category: string; localized_tag_name: string; internal_name?: string }>;
+  actions?: Array<{ link: string; name: string }>;
+  descriptions?: Array<{ type?: string; value?: string; name?: string }>;
+  type?: string;
+};
+
 const WEAR_RE = /\((Factory New|Minimal Wear|Field-Tested|Well-Worn|Battle-Scarred)\)/;
 const WEAR_SHORT: Record<string, string> = {
   "Factory New": "FN",
@@ -93,18 +106,7 @@ export async function fetchSteamInventory(steamId: string): Promise<InventoryIte
   }
   const data = (await res.json()) as {
     assets?: Array<{ assetid: string; classid: string; instanceid: string }>;
-    descriptions?: Array<{
-      classid: string;
-      instanceid: string;
-      market_hash_name: string;
-      name: string;
-      icon_url: string;
-      tradable: number;
-      tags?: Array<{ category: string; localized_tag_name: string; internal_name?: string }>;
-      actions?: Array<{ link: string; name: string }>;
-      descriptions?: Array<{ type?: string; value?: string; name?: string }>;
-      type?: string;
-    }>;
+    descriptions?: SteamInventoryDescription[];
   };
   if (!data.assets || !data.descriptions) return [];
 
@@ -130,6 +132,9 @@ export async function fetchSteamInventory(steamId: string): Promise<InventoryIte
       ? inspectAction.link.replace("%owner_steamid%", steamId).replace("%assetid%", a.assetid)
       : "";
 
+    const stickers = parseStickers(d.descriptions);
+    logStickerParseDebug({ assetId: a.assetid, description: d, stickers });
+
     items.push({
       asset_id: a.assetid,
       market_hash_name: d.market_hash_name,
@@ -141,7 +146,7 @@ export async function fetchSteamInventory(steamId: string): Promise<InventoryIte
       stattrak,
       tradable: d.tradable === 1,
       inspect_link,
-      stickers: parseStickers(d.descriptions),
+      stickers,
     });
   }
   return items;
@@ -149,31 +154,104 @@ export async function fetchSteamInventory(steamId: string): Promise<InventoryIte
 
 /**
  * Parse real applied stickers from inventory description blocks. Steam exposes
- * them as an HTML block: `<img src="..."><img src="...">...<br>Sticker: N1, N2, N3, N4`.
+ * them as HTML blocks with one image per sticker plus a `Sticker:` name line.
  * Returns [] when the line is missing — items without stickers must NEVER receive
  * fallback/default data. Preserves slot order and pairs images with names.
  */
 function parseStickers(blocks?: Array<{ type?: string; value?: string; name?: string }>): Sticker[] {
-  if (!blocks?.length) return [];
-  let names: string[] = [];
-  const imgs: string[] = [];
-  for (const b of blocks) {
-    const v = b.value;
-    if (!v) continue;
-    // Collect any sticker images present in any description block
-    for (const mm of v.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)) {
-      imgs.push(mm[1]);
+  const { names, images } = readStickerMetadata(blocks);
+  return names.map((name, i) => ({ name, slot: i, image: images[i] }));
+}
+
+function readStickerMetadata(blocks?: Array<{ type?: string; value?: string; name?: string }>): { names: string[]; images: string[]; lines: string[] } {
+  if (!blocks?.length) return { names: [], images: [], lines: [] };
+  const images: string[] = [];
+  const lines: string[] = [];
+
+  for (const block of blocks) {
+    const value = block.value;
+    if (!value) continue;
+    for (const match of value.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)) {
+      images.push(decodeSteamText(match[1]));
     }
-    if (!names.length) {
-      const text = v.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-      const m = text.match(/Sticker:\s*(.+?)\s*$/i);
-      if (m) {
-        names = m[1].split(",").map((s) => s.trim()).filter(Boolean);
-      }
+    lines.push(...htmlToTextLines(value));
+  }
+
+  const names: string[] = [];
+  for (const line of lines) {
+    const match = line.match(/^(?:Sticker|Stickers):\s*(.+)$/i);
+    if (!match) continue;
+    names.push(...splitStickerNames(match[1]));
+  }
+
+  if (!names.length) {
+    const text = lines.join(" ");
+    for (const match of text.matchAll(/(?:^|\s)(?:Sticker|Stickers):\s*(.*?)(?=\s(?:Sticker Slab|Charm|Keychain|Name Tag|Exterior|Paint Seed|Paint Index|Wear Rating|Collection|Quality|Rarity):|$)/gi)) {
+      names.push(...splitStickerNames(match[1]));
     }
   }
-  if (!names.length) return [];
-  return names.map((name, i) => ({ name, slot: i, image: imgs[i] }));
+
+  return { names, images, lines };
+}
+
+function splitStickerNames(value: string): string[] {
+  return value
+    .replace(/\s+(?:Sticker Slab|Charm|Keychain|Name Tag|Exterior|Paint Seed|Paint Index|Wear Rating|Collection|Quality|Rarity):.*$/i, "")
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean);
+}
+
+function htmlToTextLines(value: string): string[] {
+  return decodeSteamText(
+    value
+      .replace(/<br\s*\/?\s*>/gi, "\n")
+      .replace(/<\/(div|p|center)>/gi, "\n")
+      .replace(/<[^>]+>/g, " "),
+  )
+    .split(/\n+/)
+    .map((line) => line.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+}
+
+function decodeSteamText(value: string): string {
+  return value
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
+const loggedStickerDebug = new Set<string>();
+
+function logStickerParseDebug({
+  assetId,
+  description,
+  stickers,
+}: {
+  assetId: string;
+  description: SteamInventoryDescription;
+  stickers: Sticker[];
+}) {
+  const raw = readStickerMetadata(description.descriptions);
+  const key = `${assetId}:${raw.names.length}:${raw.images.length}:${stickers.length}`;
+  if (loggedStickerDebug.has(key)) return;
+  const shouldLog = raw.names.length >= 5 || raw.images.length >= 5 || raw.names.length !== stickers.length;
+  if (!shouldLog) return;
+  loggedStickerDebug.add(key);
+  console.info("[steam stickers] raw vs parsed inventory metadata", {
+    asset_id: assetId,
+    market_hash_name: description.market_hash_name,
+    raw_sticker_count: raw.names.length,
+    raw_sticker_image_count: raw.images.length,
+    parsed_sticker_count: stickers.length,
+    parsed_stickers: stickers.map((sticker) => ({ slot: sticker.slot, name: sticker.name, has_image: Boolean(sticker.image) })),
+    raw_sticker_lines: raw.lines.filter((line) => /Sticker/i.test(line)),
+    actions: description.actions?.map((action) => ({ name: action.name, has_inspect: action.link.includes("+csgo_econ_action_preview") })) ?? [],
+    tags: description.tags?.map((tag) => ({ category: tag.category, name: tag.localized_tag_name, internal: tag.internal_name })) ?? [],
+  });
 }
 
 /** Deterministic float + pattern from inspect link / asset id. Stickers come from real inventory metadata only. */

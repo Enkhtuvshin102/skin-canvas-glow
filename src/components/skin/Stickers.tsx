@@ -94,6 +94,15 @@ const StickerImage = memo(function StickerImage({ src, alt }: { src?: string; al
 export function Stickers({ stickers, size = "sm", showWear = false }: Props) {
   const list = useMemo(() => normalize(stickers), [stickers]);
   if (!list.length) return null;
+
+  if (import.meta.env.DEV) {
+    const rawCount = Array.isArray(stickers) ? stickers.length : 0;
+    if (rawCount >= 5 || list.length >= 5 || rawCount !== list.length) {
+      // eslint-disable-next-line no-console
+      console.debug("[stickers] final rendered sticker count", { rawCount, renderedCount: list.length });
+    }
+  }
+
   const box = size === "sm"
     ? list.length >= 5 ? "h-7 w-7" : "h-8 w-8"
     : "h-12 w-12";
