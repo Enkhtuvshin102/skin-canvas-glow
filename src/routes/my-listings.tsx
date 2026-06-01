@@ -114,7 +114,7 @@ function MyListingsPage() {
   );
 }
 
-function Row({ listing, onUpdate, onRemove, onRelist }: { listing: any; onUpdate: (p: number) => void; onRemove: () => void; onRelist: (p: number) => void }) {
+function Row({ listing, removing, onUpdate, onRemove, onRelist }: { listing: any; removing?: boolean; onUpdate: (p: number) => void; onRemove: () => void; onRelist: (p: number) => void }) {
   const [price, setPrice] = useState(String(listing.price_usd));
   const statusColors: Record<string, string> = {
     active: "bg-emerald-500/20 text-emerald-300",
