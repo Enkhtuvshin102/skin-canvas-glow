@@ -53,6 +53,12 @@ function ListingDetail() {
             <Stickers stickers={listing.stickers} size="md" showWear />
           </div>
         )}
+        {Array.isArray((listing as { charms?: unknown }).charms) && ((listing as { charms: unknown[] }).charms).length > 0 && (
+          <div className="mt-4">
+            <p className="text-xs uppercase text-muted-foreground mb-2">Charms</p>
+            <Charms charms={(listing as { charms: unknown }).charms} size="md" />
+          </div>
+        )}
       </div>
 
       <div className="space-y-4">
@@ -71,11 +77,23 @@ function ListingDetail() {
             >
               <ExternalLink className="mr-2 h-4 w-4" /> Contact seller on Steam
             </Button>
+            {listing.inspect_link && /^steam:\/\/rungame\/730\//i.test(listing.inspect_link) ? (
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  window.location.href = listing.inspect_link;
+                  toast.info("Opening CS2 inspect view…");
+                }}
+              >
+                <Crosshair className="mr-2 h-4 w-4" /> Inspect in-game
+              </Button>
+            ) : null}
             <Button variant="ghost" onClick={() => { navigator.clipboard.writeText(listing.inspect_link); toast.success("Inspect link copied"); }}>
               <Eye className="mr-2 h-4 w-4" /> Copy inspect link
             </Button>
           </div>
         </div>
+
 
         <div className="rounded-xl glass p-6">
           <p className="text-xs uppercase text-muted-foreground mb-3">Seller</p>
