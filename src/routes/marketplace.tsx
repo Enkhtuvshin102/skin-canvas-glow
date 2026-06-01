@@ -30,7 +30,7 @@ function MarketplacePage() {
   const [sort, setSort] = useState<"price-asc" | "price-desc" | "float-asc" | "newest">("newest");
   const [limit, setLimit] = useState(50);
 
-  const listings = useListings({ limit: 500, statuses: ["active", "unavailable", "sold"] });
+  const listings = useListings({ limit: 500, statuses: ["active"] });
 
   const filtered = useMemo(() => {
     let list = (listings.data ?? []).filter((s) => {
