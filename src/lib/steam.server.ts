@@ -61,6 +61,12 @@ export interface Sticker {
   image?: string;
 }
 
+export interface Charm {
+  name: string;
+  slot: number;
+  image?: string;
+}
+
 export interface InventoryItem {
   asset_id: string;
   market_hash_name: string;
@@ -73,7 +79,9 @@ export interface InventoryItem {
   tradable: boolean;
   inspect_link: string;
   stickers: Sticker[];
+  charms: Charm[];
 }
+
 
 type SteamInventoryDescription = {
   classid: string;
