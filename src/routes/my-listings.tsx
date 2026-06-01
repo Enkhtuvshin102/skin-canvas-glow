@@ -66,7 +66,19 @@ function MyListingsPage() {
   });
   const removeM = useMutation({
     mutationFn: (id: string) => remove({ data: { id } }),
-    onSuccess: () => { toast.success("Listing removed"); qc.invalidateQueries({ queryKey: ["my-listings"] }); },
+    onMutate: async (id: string) => {
+      const key = ["my-listings", user?.id];
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData<any[]>(key);
+      qc.setQueryData<any[]>(key, (old) => (old ?? []).filter((l) => l.id !== id));
+      return { prev, key };
+    },
+    onError: (e: Error, _id, ctx) => {
+      if (ctx?.prev) qc.setQueryData(ctx.key, ctx.prev);
+      toast.error(e.message);
+    },
+    onSuccess: () => { toast.success("Listing removed"); },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["my-listings"] }),
   });
   const relistM = useMutation({
     mutationFn: (v: { id: string; price: number }) => relist({ data: { id: v.id, price_usd: v.price } }),
