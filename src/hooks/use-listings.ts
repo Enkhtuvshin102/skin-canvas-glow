@@ -10,7 +10,7 @@ interface Options {
   statuses?: Array<Listing["status"]>;
 }
 
-export function useListings({ limit = 500, statuses = ["active", "unavailable", "sold"] }: Options = {}) {
+export function useListings({ limit = 500, statuses = ["active"] }: Options = {}) {
   const qc = useQueryClient();
   const queryKey = ["listings", { limit, statuses }];
 

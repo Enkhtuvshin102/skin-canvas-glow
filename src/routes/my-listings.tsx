@@ -31,12 +31,29 @@ function MyListingsPage() {
         .from("listings")
         .select("*")
         .eq("seller_id", user!.id)
+        .neq("status", "removed")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
     enabled: !!user,
   });
+
+  // Realtime: keep my-listings in sync with backend changes
+  useEffect(() => {
+    if (!user) return;
+    const ch = supabase
+      .channel(`my-listings-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "listings", filter: `seller_id=eq.${user.id}` },
+        () => qc.invalidateQueries({ queryKey: ["my-listings", user.id] })
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [user, qc]);
 
   useEffect(() => {
     if (user) revalidate().then(() => qc.invalidateQueries({ queryKey: ["my-listings"] })).catch(() => {});
@@ -49,7 +66,19 @@ function MyListingsPage() {
   });
   const removeM = useMutation({
     mutationFn: (id: string) => remove({ data: { id } }),
-    onSuccess: () => { toast.success("Listing removed"); qc.invalidateQueries({ queryKey: ["my-listings"] }); },
+    onMutate: async (id: string) => {
+      const key = ["my-listings", user?.id];
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData<any[]>(key);
+      qc.setQueryData<any[]>(key, (old) => (old ?? []).filter((l) => l.id !== id));
+      return { prev, key };
+    },
+    onError: (e: Error, _id, ctx) => {
+      if (ctx?.prev) qc.setQueryData(ctx.key, ctx.prev);
+      toast.error(e.message);
+    },
+    onSuccess: () => { toast.success("Listing removed"); },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["my-listings"] }),
   });
   const relistM = useMutation({
     mutationFn: (v: { id: string; price: number }) => relist({ data: { id: v.id, price_usd: v.price } }),
@@ -80,12 +109,12 @@ function MyListingsPage() {
           No listings yet. Head to your <a className="text-primary underline" href="/inventory">inventory</a> to list items.
         </div>
       )}
-      {rows.map((l) => <Row key={l.id} listing={l} onUpdate={(p) => updateM.mutate({ id: l.id, price: p })} onRemove={() => removeM.mutate(l.id)} onRelist={(p) => relistM.mutate({ id: l.id, price: p })} />)}
+      {rows.map((l) => <Row key={l.id} listing={l} removing={removeM.isPending && removeM.variables === l.id} onUpdate={(p) => updateM.mutate({ id: l.id, price: p })} onRemove={() => removeM.mutate(l.id)} onRelist={(p) => relistM.mutate({ id: l.id, price: p })} />)}
     </div>
   );
 }
 
-function Row({ listing, onUpdate, onRemove, onRelist }: { listing: any; onUpdate: (p: number) => void; onRemove: () => void; onRelist: (p: number) => void }) {
+function Row({ listing, removing, onUpdate, onRemove, onRelist }: { listing: any; removing?: boolean; onUpdate: (p: number) => void; onRemove: () => void; onRelist: (p: number) => void }) {
   const [price, setPrice] = useState(String(listing.price_usd));
   const statusColors: Record<string, string> = {
     active: "bg-emerald-500/20 text-emerald-300",
@@ -105,7 +134,7 @@ function Row({ listing, onUpdate, onRemove, onRelist }: { listing: any; onUpdate
         <Input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="w-24 h-9" />
         {listing.status === "active" && <Button size="sm" onClick={() => onUpdate(Number(price))}>Save</Button>}
         {listing.status === "unavailable" && <Button size="sm" onClick={() => onRelist(Number(price))} className="gradient-primary text-primary-foreground">Relist</Button>}
-        {listing.status !== "removed" && <Button size="sm" variant="ghost" onClick={onRemove}>Remove</Button>}
+        {listing.status !== "removed" && <Button size="sm" variant="ghost" onClick={onRemove} disabled={removing}>{removing ? "Removing…" : "Remove"}</Button>}
       </div>
     </div>
   );
