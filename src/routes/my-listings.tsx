@@ -109,7 +109,7 @@ function MyListingsPage() {
           No listings yet. Head to your <a className="text-primary underline" href="/inventory">inventory</a> to list items.
         </div>
       )}
-      {rows.map((l) => <Row key={l.id} listing={l} onUpdate={(p) => updateM.mutate({ id: l.id, price: p })} onRemove={() => removeM.mutate(l.id)} onRelist={(p) => relistM.mutate({ id: l.id, price: p })} />)}
+      {rows.map((l) => <Row key={l.id} listing={l} removing={removeM.isPending && removeM.variables === l.id} onUpdate={(p) => updateM.mutate({ id: l.id, price: p })} onRemove={() => removeM.mutate(l.id)} onRelist={(p) => relistM.mutate({ id: l.id, price: p })} />)}
     </div>
   );
 }
