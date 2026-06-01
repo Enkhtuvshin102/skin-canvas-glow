@@ -134,7 +134,7 @@ function Row({ listing, removing, onUpdate, onRemove, onRelist }: { listing: any
         <Input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="w-24 h-9" />
         {listing.status === "active" && <Button size="sm" onClick={() => onUpdate(Number(price))}>Save</Button>}
         {listing.status === "unavailable" && <Button size="sm" onClick={() => onRelist(Number(price))} className="gradient-primary text-primary-foreground">Relist</Button>}
-        {listing.status !== "removed" && <Button size="sm" variant="ghost" onClick={onRemove}>Remove</Button>}
+        {listing.status !== "removed" && <Button size="sm" variant="ghost" onClick={onRemove} disabled={removing}>{removing ? "Removing…" : "Remove"}</Button>}
       </div>
     </div>
   );
