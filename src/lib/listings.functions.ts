@@ -172,10 +172,11 @@ export const revalidateMyListings = createServerFn({ method: "POST" })
       await Promise.all(rows.map((row) => {
         const item = itemByAssetId.get(row.asset_id);
         const stickers = item?.stickers ?? [];
+        const charms = item?.charms ?? [];
         logListingStickerValidation("revalidateMyListings", row.asset_id, stickers, stickerCount(row.stickers));
         return supabaseAdmin
           .from("listings")
-          .update({ stickers: stickers as never, last_validated_at: new Date().toISOString() })
+          .update({ stickers: stickers as never, charms: charms as never, last_validated_at: new Date().toISOString() })
           .eq("id", row.id);
       }));
     }
