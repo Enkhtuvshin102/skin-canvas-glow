@@ -52,6 +52,7 @@ export const createListing = createServerFn({ method: "POST" })
     const seed = item.inspect_link || item.asset_id;
     const { float, pattern } = mockInspect(seed, item.wear);
     const stickers = item.stickers ?? [];
+    const charms = item.charms ?? [];
     logListingStickerValidation("createListing", item.asset_id, stickers);
 
     const { data: inserted, error } = await supabaseAdmin
@@ -67,6 +68,7 @@ export const createListing = createServerFn({ method: "POST" })
         float,
         pattern,
         stickers: stickers as never,
+        charms: charms as never,
         inspect_link: item.inspect_link,
         icon_url: item.icon_url,
         rarity: item.rarity,
