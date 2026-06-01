@@ -131,7 +131,7 @@ export const relistListing = createServerFn({ method: "POST" })
     logListingStickerValidation("relistListing", row.asset_id, item.stickers, stickerCount(row.stickers));
     const { error } = await supabaseAdmin
       .from("listings")
-      .update({ status: "active", price_usd: data.price_usd, stickers: item.stickers as never, last_validated_at: new Date().toISOString() })
+      .update({ status: "active", price_usd: data.price_usd, stickers: item.stickers as never, charms: (item.charms ?? []) as never, inspect_link: item.inspect_link, last_validated_at: new Date().toISOString() })
       .eq("id", data.id);
     if (error) throw error;
     return { ok: true };
