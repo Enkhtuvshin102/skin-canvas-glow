@@ -135,12 +135,13 @@ export async function fetchSteamInventory(steamId: string): Promise<InventoryIte
     const stattrak = /StatTrak™/i.test(d.market_hash_name);
     const namePart = d.market_hash_name.split(" | ")[1]?.replace(WEAR_RE, "").trim() ?? d.name;
 
-    const inspectAction = d.actions?.find((act) => act.link?.includes("+csgo_econ_action_preview"));
-    const inspect_link = inspectAction
+    const rawInspect = inspectAction
       ? inspectAction.link.replace("%owner_steamid%", steamId).replace("%assetid%", a.assetid)
       : "";
+    const inspect_link = isValidInspectLink(rawInspect) ? rawInspect : "";
 
     const stickers = parseStickers(d.descriptions);
+    const charms = parseCharms(d.descriptions);
     logStickerParseDebug({ assetId: a.assetid, description: d, stickers });
 
     items.push({
@@ -155,10 +156,49 @@ export async function fetchSteamInventory(steamId: string): Promise<InventoryIte
       tradable: d.tradable === 1,
       inspect_link,
       stickers,
+      charms,
     });
   }
   return items;
 }
+
+export function isValidInspectLink(link: string | null | undefined): boolean {
+  if (!link || typeof link !== "string") return false;
+  return /^steam:\/\/rungame\/730\/\d+\/\+csgo_econ_action_preview/i.test(link);
+}
+
+/**
+ * Parse charms (a.k.a. keychains) from per-description blocks. Each charm
+ * description block contains one <img> and a "Charm:" or "Keychain:" name
+ * line. We scan each block independently so the image pairs with the name.
+ */
+function parseCharms(blocks?: Array<{ type?: string; value?: string; name?: string }>): Charm[] {
+  if (!blocks?.length) return [];
+  const charms: Charm[] = [];
+  let slot = 0;
+  for (const block of blocks) {
+    const value = block.value;
+    if (!value) continue;
+    const lines = htmlToTextLines(value);
+    const names: string[] = [];
+    for (const line of lines) {
+      const m = line.match(/^(?:Charm|Keychain)s?:\s*(.+)$/i);
+      if (m) {
+        for (const n of m[1].split(",").map((s) => s.trim()).filter(Boolean)) names.push(n);
+      }
+    }
+    if (!names.length) continue;
+    const images: string[] = [];
+    for (const match of value.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)) {
+      images.push(decodeSteamText(match[1]));
+    }
+    names.forEach((name, i) => {
+      charms.push({ name, slot: slot++, image: images[i] });
+    });
+  }
+  return charms;
+}
+
 
 /**
  * Parse real applied stickers from inventory description blocks. Steam exposes
