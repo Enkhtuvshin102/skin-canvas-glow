@@ -52,6 +52,7 @@ export const createListing = createServerFn({ method: "POST" })
     const seed = item.inspect_link || item.asset_id;
     const { float, pattern } = mockInspect(seed, item.wear);
     const stickers = item.stickers ?? [];
+    const charms = item.charms ?? [];
     logListingStickerValidation("createListing", item.asset_id, stickers);
 
     const { data: inserted, error } = await supabaseAdmin
@@ -67,6 +68,7 @@ export const createListing = createServerFn({ method: "POST" })
         float,
         pattern,
         stickers: stickers as never,
+        charms: charms as never,
         inspect_link: item.inspect_link,
         icon_url: item.icon_url,
         rarity: item.rarity,
@@ -129,7 +131,7 @@ export const relistListing = createServerFn({ method: "POST" })
     logListingStickerValidation("relistListing", row.asset_id, item.stickers, stickerCount(row.stickers));
     const { error } = await supabaseAdmin
       .from("listings")
-      .update({ status: "active", price_usd: data.price_usd, stickers: item.stickers as never, last_validated_at: new Date().toISOString() })
+      .update({ status: "active", price_usd: data.price_usd, stickers: item.stickers as never, charms: (item.charms ?? []) as never, inspect_link: item.inspect_link, last_validated_at: new Date().toISOString() })
       .eq("id", data.id);
     if (error) throw error;
     return { ok: true };
@@ -170,10 +172,11 @@ export const revalidateMyListings = createServerFn({ method: "POST" })
       await Promise.all(rows.map((row) => {
         const item = itemByAssetId.get(row.asset_id);
         const stickers = item?.stickers ?? [];
+        const charms = item?.charms ?? [];
         logListingStickerValidation("revalidateMyListings", row.asset_id, stickers, stickerCount(row.stickers));
         return supabaseAdmin
           .from("listings")
-          .update({ stickers: stickers as never, last_validated_at: new Date().toISOString() })
+          .update({ stickers: stickers as never, charms: charms as never, last_validated_at: new Date().toISOString() })
           .eq("id", row.id);
       }));
     }
