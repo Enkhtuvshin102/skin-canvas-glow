@@ -135,6 +135,7 @@ export async function fetchSteamInventory(steamId: string): Promise<InventoryIte
     const stattrak = /StatTrak™/i.test(d.market_hash_name);
     const namePart = d.market_hash_name.split(" | ")[1]?.replace(WEAR_RE, "").trim() ?? d.name;
 
+    const inspectAction = d.actions?.find((act) => act.link?.includes("+csgo_econ_action_preview"));
     const rawInspect = inspectAction
       ? inspectAction.link.replace("%owner_steamid%", steamId).replace("%assetid%", a.assetid)
       : "";
