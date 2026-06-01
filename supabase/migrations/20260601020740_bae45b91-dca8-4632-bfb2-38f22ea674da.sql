@@ -1,0 +1,1 @@
+ALTER TABLE public.listings ADD COLUMN IF NOT EXISTS charms jsonb NOT NULL DEFAULT '[]'::jsonb;

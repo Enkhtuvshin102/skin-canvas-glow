@@ -35,6 +35,7 @@ export type Database = {
       listings: {
         Row: {
           asset_id: string
+          charms: Json
           created_at: string
           float: number
           icon_url: string | null
@@ -57,6 +58,7 @@ export type Database = {
         }
         Insert: {
           asset_id: string
+          charms?: Json
           created_at?: string
           float: number
           icon_url?: string | null
@@ -79,6 +81,7 @@ export type Database = {
         }
         Update: {
           asset_id?: string
+          charms?: Json
           created_at?: string
           float?: number
           icon_url?: string | null
