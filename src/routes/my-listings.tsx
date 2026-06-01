@@ -31,12 +31,29 @@ function MyListingsPage() {
         .from("listings")
         .select("*")
         .eq("seller_id", user!.id)
+        .neq("status", "removed")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
     enabled: !!user,
   });
+
+  // Realtime: keep my-listings in sync with backend changes
+  useEffect(() => {
+    if (!user) return;
+    const ch = supabase
+      .channel(`my-listings-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "listings", filter: `seller_id=eq.${user.id}` },
+        () => qc.invalidateQueries({ queryKey: ["my-listings", user.id] })
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [user, qc]);
 
   useEffect(() => {
     if (user) revalidate().then(() => qc.invalidateQueries({ queryKey: ["my-listings"] })).catch(() => {});
