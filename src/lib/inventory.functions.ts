@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fetchSteamInventory, type InventoryItem } from "@/lib/steam.server";
 
 const CACHE_TTL_MS = 15 * 60 * 1000;
-const STICKER_PARSER_VERSION = 3;
+const STICKER_PARSER_VERSION = 4;
 
 type CachedInventoryItem = InventoryItem & { sticker_parser_version?: number };
 
