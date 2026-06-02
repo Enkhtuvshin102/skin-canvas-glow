@@ -1,0 +1,1 @@
+UPDATE public.listings SET inspect_link = '' WHERE inspect_link NOT LIKE 'steam://rungame/730/%';
