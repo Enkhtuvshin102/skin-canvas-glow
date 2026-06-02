@@ -135,11 +135,42 @@ export async function fetchSteamInventory(steamId: string): Promise<InventoryIte
     const stattrak = /StatTrak™/i.test(d.market_hash_name);
     const namePart = d.market_hash_name.split(" | ")[1]?.replace(WEAR_RE, "").trim() ?? d.name;
 
-    const inspectAction = d.actions?.find((act) => act.link?.includes("+csgo_econ_action_preview"));
-    const rawInspect = inspectAction
-      ? inspectAction.link.replace("%owner_steamid%", steamId).replace("%assetid%", a.assetid)
+    // Steam returns multiple actions per item — weapon inspect uses the
+    // `S%owner_steamid%A%assetid%D...` template under `steam://rungame/730/<launchid>/`.
+    // Charm/keychain actions look like `steam://run/730//+csgo_econ_action_preview %propid:N%`
+    // and must NOT be used as the weapon inspect link.
+    const candidateActions = (d.actions ?? []).filter((act) =>
+      act.link?.includes("+csgo_econ_action_preview"),
+    );
+    const weaponAction =
+      candidateActions.find(
+        (act) =>
+          /^steam:\/\/rungame\/730\/\d+\//i.test(act.link) &&
+          act.link.includes("%assetid%") &&
+          act.link.includes("%owner_steamid%"),
+      ) ?? null;
+    const rawInspect = weaponAction
+      ? weaponAction.link
+          .replaceAll("%owner_steamid%", steamId)
+          .replaceAll("%assetid%", a.assetid)
       : "";
     const inspect_link = isValidInspectLink(rawInspect) ? rawInspect : "";
+    if (candidateActions.length && !weaponAction) {
+      console.warn("[steam inspect] no weapon inspect action found", {
+        asset_id: a.assetid,
+        market_hash_name: d.market_hash_name,
+        raw_actions: candidateActions.map((act) => ({ name: act.name, link: act.link })),
+      });
+    } else if (weaponAction) {
+      console.info("[steam inspect] selected weapon inspect action", {
+        asset_id: a.assetid,
+        raw_link: weaponAction.link,
+        resolved_link: inspect_link,
+        other_actions: candidateActions
+          .filter((act) => act !== weaponAction)
+          .map((act) => ({ name: act.name, link: act.link })),
+      });
+    }
 
     const stickers = parseStickers(d.descriptions);
     const charms = parseCharms(d.descriptions);
