@@ -106,7 +106,10 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_name: string | null
+          account_number: string | null
           avatar_url: string | null
+          bank_name: string | null
           created_at: string
           id: string
           last_inventory_sync: string | null
@@ -116,7 +119,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          account_name?: string | null
+          account_number?: string | null
           avatar_url?: string | null
+          bank_name?: string | null
           created_at?: string
           id: string
           last_inventory_sync?: string | null
@@ -126,7 +132,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          account_name?: string | null
+          account_number?: string | null
           avatar_url?: string | null
+          bank_name?: string | null
           created_at?: string
           id?: string
           last_inventory_sync?: string | null
@@ -137,6 +146,47 @@ export type Database = {
         }
         Relationships: []
       }
+      transactions: {
+        Row: {
+          buyer_id: string
+          created_at: string
+          id: string
+          listing_id: string
+          price: number
+          seller_id: string
+          status: Database["public"]["Enums"]["transaction_status"]
+          updated_at: string
+        }
+        Insert: {
+          buyer_id: string
+          created_at?: string
+          id?: string
+          listing_id: string
+          price: number
+          seller_id: string
+          status?: Database["public"]["Enums"]["transaction_status"]
+          updated_at?: string
+        }
+        Update: {
+          buyer_id?: string
+          created_at?: string
+          id?: string
+          listing_id?: string
+          price?: number
+          seller_id?: string
+          status?: Database["public"]["Enums"]["transaction_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -145,7 +195,18 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      listing_status: "active" | "sold" | "unavailable" | "removed"
+      listing_status:
+        | "active"
+        | "sold"
+        | "unavailable"
+        | "removed"
+        | "payment_pending"
+      transaction_status:
+        | "payment_pending"
+        | "paid"
+        | "completed"
+        | "cancelled"
+        | "disputed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -273,7 +334,20 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      listing_status: ["active", "sold", "unavailable", "removed"],
+      listing_status: [
+        "active",
+        "sold",
+        "unavailable",
+        "removed",
+        "payment_pending",
+      ],
+      transaction_status: [
+        "payment_pending",
+        "paid",
+        "completed",
+        "cancelled",
+        "disputed",
+      ],
     },
   },
 } as const
