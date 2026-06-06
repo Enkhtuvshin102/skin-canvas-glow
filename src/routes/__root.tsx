@@ -84,6 +84,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "FragMarket — CS2 Skin Marketplace" },
+      { name: "twitter:description", content: "Trade premium CS2 skins with verified floats, sticker overlays, and real-time market pricing." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0925934d-c937-492a-b491-00f5d6f487ba/id-preview-2db78ef3--51969b55-d089-44bf-9beb-f6a13baac9a4.lovable.app-1780710229230.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0925934d-c937-492a-b491-00f5d6f487ba/id-preview-2db78ef3--51969b55-d089-44bf-9beb-f6a13baac9a4.lovable.app-1780710229230.png" },
     ],
     links: [
       {
