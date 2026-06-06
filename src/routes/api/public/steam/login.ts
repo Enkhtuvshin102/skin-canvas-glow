@@ -6,7 +6,7 @@ export const Route = createFileRoute("/api/public/steam/login")({
     handlers: {
       GET: async ({ request }) => {
         const url = new URL(request.url);
-        const origin = `${url.protocol}//${url.host}`;
+        const origin = process.env.APP_ORIGIN ?? `${url.protocol}//${url.host}`;
         const returnTo = `${origin}/api/public/steam/callback`;
         const realm = origin;
         const redirectUrl = buildOpenIdRedirect(returnTo, realm);
