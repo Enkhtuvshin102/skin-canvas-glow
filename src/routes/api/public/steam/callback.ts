@@ -13,7 +13,7 @@ export const Route = createFileRoute("/api/public/steam/callback")({
     handlers: {
       GET: async ({ request }) => {
         const url = new URL(request.url);
-        const origin = `${url.protocol}//${url.host}`;
+        const origin = process.env.APP_ORIGIN ?? `${url.protocol}//${url.host}`;
         const steamId = await verifyOpenIdResponse(url.searchParams);
         if (!steamId) {
           return new Response(null, { status: 302, headers: { Location: `${origin}/?steam_error=invalid` } });
@@ -30,13 +30,18 @@ export const Route = createFileRoute("/api/public/steam/callback")({
         const profileUrl = profile?.profileurl ?? `https://steamcommunity.com/profiles/${steamId}`;
 
         const email = `steam_${steamId}@fragmarket.local`;
-        // Find or create the auth user
+        // Find existing user via profiles.steam_id (O(1)) instead of paginating auth users
         let userId: string | null = null;
-        const { data: existing } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
-        const found = existing?.users.find((u) => u.email === email);
-        if (found) {
-          userId = found.id;
-        } else {
+        const { data: existingProfile } = await supabaseAdmin
+          .from("profiles")
+          .select("id")
+          .eq("steam_id", steamId)
+          .maybeSingle();
+        if (existingProfile?.id) {
+          const { data: userResp } = await supabaseAdmin.auth.admin.getUserById(existingProfile.id);
+          if (userResp?.user) userId = userResp.user.id;
+        }
+        if (!userId) {
           const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
             email,
             email_confirm: true,
